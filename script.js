@@ -85,21 +85,24 @@ function handleFlightSearch() {
     handleSendMessage();
 }
 
-// Send message to server
+// ✅ UPDATED: Send message to Netlify Function
 async function sendMessageToBot(message) {
     try {
-        const response = await fetch('/chat', {
+        // Call Netlify Function instead of external endpoint
+        const response = await fetch('/.netlify/functions/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message })
         });
         
         if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Server error: ${response.status}`);
         }
         
         const data = await response.json();
-        return data.reply;
+        // Return the response from Claude
+        return data.response;
     } catch (error) {
         console.error('Error sending message:', error);
         return "Sorry, I'm having trouble connecting right now. Please try again shortly.";
